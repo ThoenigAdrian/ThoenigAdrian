@@ -185,13 +185,13 @@ in
 This means the search space for the password dramatically decreased to **5 characters**.
 We started brute forcing to see how fast we could solve this.
 Assuming a **flag range** from **0x20-0xff** this would mean **7.7 * 10 ^ 9**  entries.
-With an 8 core cpu we reached **14.7kH/s** which meant we'd need **~145 hours** for brute forcing this password. 
-As the ctf only lasts for 48 hours this approach wasn't really feasible.
+With an 8 core CPU we reached **14.7kH/s** which meant we'd need **~145 hours** for brute forcing this password. 
+As the CTF only lasts for 48 hours this approach wasn't really feasible.
 
 We then thought about reimplementing it in C but we estimated a MAXIMUM speedup of ~10 (probably less) so we avoided 
 this option for now.
 
-Another theory was that there might be some obvious inefficencies in the Encryptor Code and if we could optimizie them we could get a better brute force time
+Another theory was that there might be some obvious inefficiencies in the Encryptor Code and if we could optimize them we could get a better brute force time
 unfortunately we couldn't find any low hanging fruits. 
 
 We did some further research, we found a few code snippets which looked very similar to the code of ```Encryptor.cs``` . 
@@ -201,19 +201,19 @@ Actually the snippets we found implemented the Unix Crypt method.
 
 **Left Side: Encryptor.cs**   vs.      **Right Side: Perl Implementation of Unix Crypt**
 
-So we installed the ```md5pass``` command.
+Therefore we installed the ```md5pass``` command.
 
 ```md5pass``` is a command line utility which you can feed a hash and a salt and it outputs the MD5 Crypt Hash. 
 
-Unfortunately the hashses didn't match the ones of the ```Encryptor.cs``` but we noticed that the last two bytes were the same.
+Unfortunately the hashes didn't match the ones of the ```Encryptor.cs``` but we noticed that the last two bytes were the same.
 In the image below one can see that the last two characters are the same.
 ![](comparisonhash.jpeg)
 
 Therefore we thought there might be some subtle changes between the algorithms, (sharpPasswd vs. Unix Crypt), which resulted in a different hash.
-And in fact we found that the algorithm is the same up until the byte shifting part.
-The byte shifting at the end was different.
+And in fact we found that the algorithm is the same up until the bit shifting part.
+The bit shifting at the end was different.
 
-This meant that if we were able to reverse the wrong byte shifiting in Encryptor.cs we could convert the Encryptor hash to a legit Crypt Hash.
+This meant that if we were able to reverse the wrong byte shifting in Encryptor.cs we could convert the Encryptor hash to a legit Crypt Hash.
 
 Why would we want do this ? 
 
@@ -269,7 +269,7 @@ Which outputs the following hash:
 
 ```Flipped target: $1$.XnY46$LhnB7S4z7gOmPrSjikP3C1```
 
-After successfull conversion we saved the hash into a file and let hashcat do it's magic. 
+After successful conversion we saved the hash into a file and let hashcat do it's magic. 
 
  ```hashcat -O -m 500 -a 3 test_hash.txt -1 ?a?a?a?a?a```
  
@@ -278,7 +278,7 @@ Explanation:
 2. ```-O```  turns on some optimizations which in our case gave us double the hashrate
 3. ```hash.txt``` just contains ```$1$.XnY46$LhnB7S4z7gOmPrSjikP3C1``` (we had to save it in a file otherwise we got some ```bad separator``` errors)
 4. ```?a?a?a?a?a``` tells hash cat that the password is 5 chars long 
-5. a corresponds to ```a-z``` , ```A-Z```, ```0-9``` and the following special characters ```«space»!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~```
+5. ```?a``` corresponds to ```a-z``` , ```A-Z```, ```0-9``` and the following special characters ```«space»!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~```
 
 
 We got around 7.8 MH/s on a Nvidia GTX 1070 Ti . 
