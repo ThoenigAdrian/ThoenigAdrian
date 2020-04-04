@@ -1,5 +1,7 @@
 # Sharpasswd
 
+This is a writeup of the CTF Team [JustDoIt](https://ctftime.org/team/35753)
+
 ## TL;DR
 
 1. Load into ILSpy to get the decompiled code
@@ -168,9 +170,8 @@ namespace VolgaCTF
 ```
 
 Before taking a deeper look into the code we played a bit around with the hash function and could observe that for inputs like ```test2, test23, test234``` resulted in the same output hash.
-To be able to observe this behaviour you need to hardcode the salt to ```salty``` and remove the random salt generation.
-
 ![](test23.png)
+To be able to observe this behaviour you need to hardcode the salt to ```salty``` and remove the random salt generation.
 
 Which we could then track down to the following line of code:
 
@@ -181,11 +182,10 @@ in
 ```public Encryptor(string pass)```   
 
 
-
 This means the search space for the password dramatically decreased to **5 characters**.
-We started some brute forcing to see how fast we could solve this.
-Assuming a **flag range** from **0x20-0xff** this would mean **7.7 * 10 ^ 9**  entries , with an 8 core cpu we reached
-**14.7kH/s** which meant we'd need **~145 hours** for brute forcing this password. 
+We started brute forcing to see how fast we could solve this.
+Assuming a **flag range** from **0x20-0xff** this would mean **7.7 * 10 ^ 9**  entries.
+With an 8 core cpu we reached **14.7kH/s** which meant we'd need **~145 hours** for brute forcing this password. 
 As the ctf only lasts for 48 hours this approach wasn't really feasible.
 
 We then thought about reimplementing it in C but we estimated a MAXIMUM speedup of ~10 (probably less) so we avoided 
@@ -197,7 +197,7 @@ unfortunately we couldn't find any low hanging fruits.
 We did some further research, we found a few code snippets which looked very similar to the code of ```Encryptor.cs``` . 
 Actually the snippets we found implemented the Unix Crypt method.
 
-![](comparisoncrypt.png)
+![](comparisoncrypt.PNG)
 
 So we installed the ```md5pass``` command which is a perl module which you can give a hash and a salt and it outputs the MD5 Crypt Hash. 
 
@@ -272,7 +272,7 @@ After successfull conversion we saved the hash into a file and let hashcat do it
 Explanation:
 1. ```-m 500``` corresponds to the unix Crypt Hash. 
 2. ```-O```  turns on some optimizations which in our case gave us double the hashrate
-3. ```hash.txt``` just contains ```$1$.XnY46$LhnB7S4z7gOmPrSjikP3C1``` (the converted hash)
+3. ```hash.txt``` just contains ```$1$.XnY46$LhnB7S4z7gOmPrSjikP3C1``` (we had to save it in a file otherwise we got some ```bad separator``` errors)
 4. ```?a?a?a?a?a``` tells hash cat that the password is 5 chars long 
 5. a corresponds to ```a-z``` , ```A-Z```, ```0-9``` and the following special characters ```«space»!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~```
 
