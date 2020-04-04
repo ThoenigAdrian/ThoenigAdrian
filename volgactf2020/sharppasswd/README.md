@@ -201,7 +201,8 @@ Actually the snippets we found implemented the Unix Crypt method.
 
 **Left Side: Encryptor.cs**   vs.      **Right Side: Perl Implementation of Unix Crypt**
 
-So we installed the ```md5pass``` command which is a perl module which you can give a hash and a salt and it outputs the MD5 Crypt Hash. 
+So we installed the ```md5pass``` command.
+```md5pass``` is a command line util you can feed a hash and a salt and it outputs the MD5 Crypt Hash. 
 
 Unfortunately the hashses didn't match the ones of the ```Encryptor.cs``` but we noticed that the last two bytes were the same.
 In the image below one can see that the last two characters are the same.
