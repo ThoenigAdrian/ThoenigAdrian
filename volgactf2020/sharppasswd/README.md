@@ -199,6 +199,8 @@ Actually the snippets we found implemented the Unix Crypt method.
 
 ![](comparisoncrypt.PNG)
 
+**Left Side: Encryptor.cs**   vs.      **Right Side: Perl Implementation of Unix Crypt**
+
 So we installed the ```md5pass``` command which is a perl module which you can give a hash and a salt and it outputs the MD5 Crypt Hash. 
 
 Unfortunately the hashses didn't match the ones of the ```Encryptor.cs``` but we noticed that the last two bytes were the same.
